@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API PWA Example</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <h1>API PWA Example</h1>
+  <label>
+    Klucz API:
+    <input type="text" id="apiKeyInput" placeholder="Wpisz swój klucz API">
+    <button id="saveKeyBtn">Zapisz klucz</button>
+  </label>
+  <select id="querySelect"></select>
+<div id="paramsContainer"></div>
+<button id="fetchBtn">Pobierz dane z API</button>
+<button id="exportBtn">Eksportuj do Excel (CSV)</button>
+<label>
+  <input type="checkbox" id="viewSwitch">
+  Wyświetl jako tabela
+</label>
+<div id="tableOutput" style="display:none"></div>
+<div style="height: 50%">
+<pre id="output"></pre>
+</div>
+  <script src="app.js"></script>
+</body>
+</html>

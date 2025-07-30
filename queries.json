@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Status",
+    "url": "https://api.eclesiar.com/server/status"
+  },
+  {
+    "name": "Kraje",
+    "url": "https://api.eclesiar.com/countries"
+  },
+    {
+    "name": "Country",
+    "url": "https://api.eclesiar.com/country/regions",
+    "params": [
+      {
+        "name": "country_id",
+        "label": "ID kraju",
+        "type": "number"
+      }
+    ]
+  },
+  {
+    "name": "Currency",
+    "url": "https://api.eclesiar.com/market/coin/get",
+    "params": [
+      {
+        "name": "currency_id",
+        "label": "ID waluty",
+        "type": "number"
+      }
+    ]
+  }
+]
