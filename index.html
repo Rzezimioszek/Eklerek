@@ -1,30 +1,315 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>API PWA Example</title>
-  <link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>War Era Simulator</title>
+    <style>
+        * {box-sizing: border-box; -webkit-tap-highlight-color: transparent;}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #0a0a15;
+            color: #ccc;
+            margin: 0;
+            padding: 10px;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #16162b;
+            padding: 15px;
+            border-radius: 16px;
+            border: 1px solid #00ff9d;
+            box-shadow: 0 0 20px rgba(0,255,157,0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #00ff9d;
+            font-size: 1.8rem;
+            margin: 10px 0 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        h1 + p {
+            text-align: center;
+            color: #00ccff;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #00ff9d;
+            border-bottom: 1px solid #334;
+            padding-bottom: 5px;
+            margin: 25px 0 15px 0;
+            font-size: 1.2rem;
+        }
+        
+        /* --- INPUTS & FORMS (Mobile Friendly) --- */
+        /* Font-size 16px prevents iOS zoom on focus */
+        input, select {
+            font-size: 16px; 
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #334;
+            background: #223;
+            color: #fff;
+            width: 100%;
+        }
+        input:focus, select:focus {
+            border-color: #00ff9d;
+            outline: none;
+        }
+        
+        /* --- SKILL GRID --- */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Mobile first */
+            gap: 10px;
+        }
+        @media (min-width: 600px) {
+            .grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (min-width: 900px) {
+            .grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .skill-item {
+            background: #1f1f35;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #2a2a45;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .skill-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            color: #a0f0d0;
+        }
+        .skill-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .skill-controls input[type="range"] {
+            flex: 1;
+            height: 20px; /* Większy obszar dotyku */
+            accent-color: #00ff9d;
+        }
+        .skill-controls input[type="number"] {
+            width: 50px;
+            text-align: center;
+            padding: 8px 4px;
+        }
+        .skill-val-display {
+            color: #00ff9d;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* --- POINTS TRACKER --- */
+        .points-tracker {
+            background: #1a1a30;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #00ff9d;
+            text-align: center;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+        .points-display {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #00ff9d;
+        }
+        
+        /* --- FIELDSETS --- */
+        fieldset {
+            border: 1px solid #334;
+            background: #1a1a30;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        legend {
+            color: #00ccff;
+            font-weight: bold;
+            padding: 0 5px;
+        }
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 12px;
+        }
+        .form-row label {
+            margin-bottom: 5px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        @media (min-width: 600px) {
+            .form-row {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .form-row label { margin-bottom: 0; margin-right: 10px; }
+            .form-row input, .form-row select { width: 150px; }
+        }
+
+        /* --- ACTION BUTTON --- */
+        #simulateBtn {
+            width: 100%;
+            background: linear-gradient(135deg, #00ff9d, #009966);
+            color: #000;
+            font-weight: 800;
+            font-size: 1.2rem;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,255,157,0.3);
+            cursor: pointer;
+        }
+        #simulateBtn:active { transform: scale(0.98); }
+
+        /* --- RESULTS --- */
+        .results {
+            display: none;
+            background: #1a1a30;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #00ff9d;
+        }
+        .res-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        @media (min-width: 600px) {
+            .res-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        .res-card {
+            background: #223;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #334;
+        }
+        .res-card small { display: block; color: #888; font-size: 0.75rem; margin-bottom: 3px; }
+        .res-card span { display: block; color: #fff; font-weight: bold; font-size: 1.1rem; }
+        .res-card span.highlight { color: #00ff9d; font-size: 1.2rem; }
+
+        textarea {
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 12px;
+            border: 1px solid #333;
+        }
+    </style>
 </head>
 <body>
-  <h1>API PWA Example</h1>
-  <label>
-    Klucz API:
-    <input type="text" id="apiKeyInput" placeholder="Wpisz swój klucz API">
-    <button id="saveKeyBtn">Zapisz klucz</button>
-  </label>
-  <select id="querySelect"></select>
-<div id="paramsContainer"></div>
-<button id="fetchBtn">Pobierz dane z API</button>
-<button id="exportBtn">Eksportuj do Excel (CSV)</button>
-<label>
-  <input type="checkbox" id="viewSwitch">
-  Wyświetl jako tabela
-</label>
-<div id="tableOutput" style="display:none"></div>
-<div style="height: 50%">
-<pre id="output"></pre>
+
+<div class="container">
+    <h1>War Era Sim</h1>
+    <p>Symulator Buildów v3.1</p>
+
+    <!-- STICKY TRACKER -->
+    <div class="points-tracker">
+        <small>WYDANE / DOSTĘPNE</small>
+        <div class="points-display">
+            <span id="usedPoints">0</span> / <input type="number" id="totalPoints" value="96" style="width:60px; font-size:1.2rem; padding:5px; text-align:center; border:none; border-bottom:1px solid #00ff9d; background:transparent; color:#fff;">
+        </div>
+        <div id="pointsWarning" style="color:#ff5555; display:none; font-weight:bold; font-size:0.9rem;">⚠️ BRAK PUNKTÓW!</div>
+    </div>
+
+    <h2>🎯 UMIEJĘTNOŚCI</h2>
+    <div class="grid" id="skillsGrid"></div>
+
+    <h2>🛡️ EKWIPUNEK</h2>
+    <fieldset>
+        <div class="form-row"><label>Weapon Attack:</label><input type="number" id="weaponAttack" value="120"></div>
+        <div class="form-row"><label>Weapon Crit (%):</label><input type="number" id="weaponCrit" value="10"></div>
+        <div class="form-row"><label>Helmet Crit Dmg (%):</label><input type="number" id="helmetCritDmg" value="10"></div>
+        <div class="form-row"><label>Chest Armor (%):</label><input type="number" id="chestArmor" value="10"></div>
+        <div class="form-row"><label>Pants Armor (%):</label><input type="number" id="pantsArmor" value="10"></div>
+        <div class="form-row"><label>Boots Dodge (%):</label><input type="number" id="bootsDodge" value="10"></div>
+        <div class="form-row"><label>Gloves Precision (%):</label><input type="number" id="glovesPrec" value="10"></div>
+    </fieldset>
+
+    <h2>🍗 KONSUMPCJA</h2>
+    <fieldset>
+        <div class="form-row">
+            <label>Jedzenie:</label>
+            <select id="foodType">
+                <option value="10">Chleb (10 HP)</option>
+                <option value="20" selected>Stek (20 HP)</option>
+                <option value="30">Ryba (30 HP)</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label>Amunicja:</label>
+            <select id="ammoType">
+                <option value="0">Brak</option>
+                <option value="10">Light (+10%)</option>
+                <option value="20" selected>Normal (+20%)</option>
+                <option value="40">Heavy (+40%)</option>
+            </select>
+        </div>
+        <div class="form-row" style="justify-content:flex-start; gap:10px;">
+            <input type="checkbox" id="usePill" checked style="width:20px;">
+            <label for="usePill" style="color:#fff;">Używam Pill (+80% / -80%)</label>
+        </div>
+    </fieldset>
+
+    <h2>🏭 PRODUKCJA</h2>
+    <fieldset>
+        <div class="form-row"><label>Liczba Firm:</label><input type="number" id="numCompanies" value="4"></div>
+        <div class="form-row"><label>Engine Level (1-7):</label><input type="number" id="automatedEngine" value="3"></div>
+        <div class="form-row"><label>Prod. Bonus (%):</label><input type="number" id="productionBonus" value="0"></div>
+        <div class="form-row"><label>Work u innych:</label><input type="number" id="worksPerDay" value="0"></div>
+    </fieldset>
+
+    <button id="simulateBtn">OBLICZ WYNIKI</button>
+
+    <div id="results" class="results">
+        <h3 style="text-align:center; color:#00ff9d; margin-top:0;">WYNIKI (24H)</h3>
+        
+        <div class="res-grid">
+            <div class="res-card"><small>Avg DMG/Hit</small><span class="highlight" id="resAvgDmg">0</span></div>
+            <div class="res-card"><small>Hits / 24h</small><span class="highlight" id="resHits">0</span></div>
+            <div class="res-card"><small>Total DMG</small><span class="highlight" id="resTotalDmg">0</span></div>
+            <div class="res-card"><small>Cases</small><span id="resCases">0</span></div>
+            <div class="res-card"><small>HP Cost/Hit</small><span id="resHpCost">0</span></div>
+            <div class="res-card"><small>HP Regen</small><span id="resHpRegen">0</span></div>
+        </div>
+
+        <h4 style="color:#00ccff; border-bottom:1px solid #334;">PRODUKCJA (PP)</h4>
+        <div class="res-grid">
+            <div class="res-card"><small>Self Work</small><span id="resSelfPP">0</span></div>
+            <div class="res-card"><small>Ext. Work</small><span id="resExtPP">0</span></div>
+            <div class="res-card"><small>Automated</small><span id="resAutoPP">0</span></div>
+            <div class="res-card"><small>TOTAL PP</small><span class="highlight" id="resTotalPP">0</span></div>
+        </div>
+
+        <div style="margin-top:20px;">
+            <button onclick="copyJSON()" style="margin:0; padding:10px; font-size:1rem; background:#334; color:#fff;">Kopiuj JSON do Schowka</button>
+            <textarea id="jsonOutput" style="height:0; opacity:0;"></textarea>
+        </div>
+    </div>
+
+    <div style="text-align:center; margin-top:40px; color:#666; font-size:0.8rem;">
+        War Era Simulator v3.1 Fix
+    </div>
 </div>
-  <script src="app.js"></script>
+
+<script src="simulator.js"></script>
 </body>
 </html>
