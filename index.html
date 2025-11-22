@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>War Era Simulator</title>
+    <title>War Era Simulator (Red)</title>
     <style>
         * {box-sizing: border-box; -webkit-tap-highlight-color: transparent;}
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #0a0a15;
-            color: #ccc;
+            background: #05050a; /* Bardzo ciemne tło */
+            color: #ddd;
             margin: 0;
             padding: 10px;
             line-height: 1.5;
@@ -17,68 +17,68 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: #16162b;
+            background: #11111f;
             padding: 15px;
             border-radius: 16px;
-            border: 1px solid #00ff9d;
-            box-shadow: 0 0 20px rgba(0,255,157,0.2);
+            border: 1px solid #ff3333; /* Czerwona ramka */
+            box-shadow: 0 0 25px rgba(255, 51, 51, 0.15);
         }
+        
+        /* --- TYPOGRAPHY (RED THEME) --- */
         h1 {
             text-align: center;
-            color: #00ff9d;
+            color: #ff3333;
             font-size: 1.8rem;
             margin: 10px 0 5px 0;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 51, 51, 0.6);
         }
         h1 + p {
             text-align: center;
-            color: #00ccff;
+            color: #ffaa00; /* Pomarańczowy akcent */
             font-size: 0.9rem;
             margin-bottom: 20px;
         }
         h2 {
-            color: #00ff9d;
-            border-bottom: 1px solid #334;
+            color: #ff3333;
+            border-bottom: 1px solid #442222;
             padding-bottom: 5px;
             margin: 25px 0 15px 0;
             font-size: 1.2rem;
+            text-transform: uppercase;
         }
         
-        /* --- INPUTS & FORMS (Mobile Friendly) --- */
-        /* Font-size 16px prevents iOS zoom on focus */
+        /* --- INPUTS --- */
         input, select {
             font-size: 16px; 
             padding: 10px;
             border-radius: 8px;
-            border: 1px solid #334;
-            background: #223;
+            border: 1px solid #442222;
+            background: #1a0f0f;
             color: #fff;
             width: 100%;
         }
         input:focus, select:focus {
-            border-color: #00ff9d;
+            border-color: #ff3333;
             outline: none;
+            background: #251515;
         }
-        
+
         /* --- SKILL GRID --- */
         .grid {
             display: grid;
-            grid-template-columns: 1fr; /* Mobile first */
+            grid-template-columns: 1fr;
             gap: 10px;
         }
-        @media (min-width: 600px) {
-            .grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (min-width: 900px) {
-            .grid { grid-template-columns: repeat(3, 1fr); }
-        }
+        @media (min-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 900px) { .grid { grid-template-columns: repeat(3, 1fr); } }
 
         .skill-item {
-            background: #1f1f35;
+            background: #1a1a25;
             padding: 12px;
             border-radius: 10px;
-            border: 1px solid #2a2a45;
+            border: 1px solid #332222;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -87,77 +87,57 @@
             display: flex;
             justify-content: space-between;
             font-weight: bold;
-            color: #a0f0d0;
-        }
-        .skill-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .skill-controls input[type="range"] {
-            flex: 1;
-            height: 20px; /* Większy obszar dotyku */
-            accent-color: #00ff9d;
-        }
-        .skill-controls input[type="number"] {
-            width: 50px;
-            text-align: center;
-            padding: 8px 4px;
+            color: #ffcccc;
         }
         .skill-val-display {
-            color: #00ff9d;
+            color: #ff3333;
             font-weight: bold;
-            font-size: 0.9rem;
         }
+        
+        /* SLIDERS */
+        input[type="range"] {
+            accent-color: #ff3333;
+            height: 20px;
+        }
+        .skill-controls { display: flex; gap: 10px; align-items: center; }
+        .skill-controls input[type="number"] { width: 50px; text-align: center; }
 
         /* --- POINTS TRACKER --- */
         .points-tracker {
-            background: #1a1a30;
+            background: #1a0f0f;
             padding: 15px;
             border-radius: 12px;
-            border: 1px solid #00ff9d;
+            border: 2px solid #ff3333;
             text-align: center;
             position: sticky;
             top: 10px;
             z-index: 100;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.7);
             margin-bottom: 20px;
         }
         .points-display {
             font-size: 1.8rem;
             font-weight: bold;
-            color: #00ff9d;
+            color: #ff3333;
         }
-        
+        .points-display input { border-bottom: 1px solid #ff3333; }
+
         /* --- FIELDSETS --- */
         fieldset {
-            border: 1px solid #334;
-            background: #1a1a30;
+            border: 1px solid #442222;
+            background: #161111;
             border-radius: 10px;
             padding: 15px;
             margin: 15px 0;
         }
-        legend {
-            color: #00ccff;
-            font-weight: bold;
-            padding: 0 5px;
-        }
+        legend { color: #ffaa00; font-weight: bold; padding: 0 5px; }
         .form-row {
             display: flex;
             flex-direction: column;
             margin-bottom: 12px;
         }
-        .form-row label {
-            margin-bottom: 5px;
-            color: #aaa;
-            font-size: 0.9rem;
-        }
         @media (min-width: 600px) {
-            .form-row {
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-            }
+            .form-row { flex-direction: row; align-items: center; justify-content: space-between; }
             .form-row label { margin-bottom: 0; margin-right: 10px; }
             .form-row input, .form-row select { width: 150px; }
         }
@@ -165,53 +145,68 @@
         /* --- ACTION BUTTON --- */
         #simulateBtn {
             width: 100%;
-            background: linear-gradient(135deg, #00ff9d, #009966);
-            color: #000;
+            background: linear-gradient(135deg, #ff3333, #cc0000);
+            color: #fff;
             font-weight: 800;
             font-size: 1.2rem;
             padding: 15px;
             border: none;
             border-radius: 12px;
             margin: 20px 0;
-            box-shadow: 0 5px 15px rgba(0,255,157,0.3);
+            box-shadow: 0 5px 15px rgba(255, 51, 51, 0.3);
             cursor: pointer;
+            text-transform: uppercase;
         }
         #simulateBtn:active { transform: scale(0.98); }
 
         /* --- RESULTS --- */
         .results {
             display: none;
-            background: #1a1a30;
+            background: #1a1a25;
             padding: 15px;
             border-radius: 12px;
-            border: 1px solid #00ff9d;
+            border: 2px solid #ff3333;
+        }
+        .res-section-title {
+            text-align: center;
+            color: #ff3333;
+            margin: 20px 0 10px 0;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
         }
         .res-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
-        @media (min-width: 600px) {
-            .res-grid { grid-template-columns: repeat(3, 1fr); }
-        }
+        @media (min-width: 600px) { .res-grid { grid-template-columns: repeat(3, 1fr); } }
+        
         .res-card {
-            background: #223;
+            background: #222233;
             padding: 10px;
             border-radius: 8px;
             text-align: center;
-            border: 1px solid #334;
+            border: 1px solid #333;
         }
-        .res-card small { display: block; color: #888; font-size: 0.75rem; margin-bottom: 3px; }
+        .res-card small { display: block; color: #888; font-size: 0.75rem; margin-bottom: 3px; text-transform: uppercase;}
         .res-card span { display: block; color: #fff; font-weight: bold; font-size: 1.1rem; }
-        .res-card span.highlight { color: #00ff9d; font-size: 1.2rem; }
+        .res-card span.highlight { color: #ff3333; font-size: 1.2rem; }
+        
+        /* Dual value display (24h / 7d) */
+        .dual-val { font-size: 0.9rem !important; color: #fff !important; }
+        .dual-val b { color: #ff3333; font-size: 1.1rem; } /* Dzień */
+        .dual-val i { color: #ffaa00; font-style: normal; } /* Tydzień */
 
         textarea {
             background: #000;
-            color: #0f0;
+            color: #ff3333;
             font-family: monospace;
             font-size: 12px;
-            border: 1px solid #333;
+            border: 1px solid #442222;
+            width: 100%;
+            height: 60px;
         }
     </style>
 </head>
@@ -219,15 +214,15 @@
 
 <div class="container">
     <h1>War Era Sim</h1>
-    <p>Symulator Buildów v3.1</p>
+    <p>Battle Simulator v4.0 (Red Edition)</p>
 
     <!-- STICKY TRACKER -->
     <div class="points-tracker">
-        <small>WYDANE / DOSTĘPNE</small>
+        <small style="color:#888;">PUNKTY (WYDANE / LIMIT)</small>
         <div class="points-display">
-            <span id="usedPoints">0</span> / <input type="number" id="totalPoints" value="96" style="width:60px; font-size:1.2rem; padding:5px; text-align:center; border:none; border-bottom:1px solid #00ff9d; background:transparent; color:#fff;">
+            <span id="usedPoints">0</span> / <input type="number" id="totalPoints" value="96" style="width:60px; font-size:1.5rem; padding:5px; text-align:center; border:none; border-bottom:1px solid #ff3333; background:transparent; color:#fff;">
         </div>
-        <div id="pointsWarning" style="color:#ff5555; display:none; font-weight:bold; font-size:0.9rem;">⚠️ BRAK PUNKTÓW!</div>
+        <div id="pointsWarning" style="color:#ff5555; display:none; font-weight:bold; font-size:0.9rem; margin-top:5px;">⚠️ BRAK PUNKTÓW!</div>
     </div>
 
     <h2>🎯 UMIEJĘTNOŚCI</h2>
@@ -244,7 +239,7 @@
         <div class="form-row"><label>Gloves Precision (%):</label><input type="number" id="glovesPrec" value="10"></div>
     </fieldset>
 
-    <h2>🍗 KONSUMPCJA</h2>
+    <h2>🍗 LOGISTYKA</h2>
     <fieldset>
         <div class="form-row">
             <label>Jedzenie:</label>
@@ -265,7 +260,7 @@
         </div>
         <div class="form-row" style="justify-content:flex-start; gap:10px;">
             <input type="checkbox" id="usePill" checked style="width:20px;">
-            <label for="usePill" style="color:#fff;">Używam Pill (+80% / -80%)</label>
+            <label for="usePill" style="color:#fff;">Używam Pill (8h buff / 16h debuff)</label>
         </div>
     </fieldset>
 
@@ -279,34 +274,51 @@
 
     <button id="simulateBtn">OBLICZ WYNIKI</button>
 
+    <!-- RESULTS SECTION -->
     <div id="results" class="results">
-        <h3 style="text-align:center; color:#00ff9d; margin-top:0;">WYNIKI (24H)</h3>
+        <h3 style="text-align:center; color:#ff3333; margin:0;">RAPORT BOJOWY</h3>
+        <p style="text-align:center; color:#888; font-size:0.8rem; margin-top:0;">DZIEŃ (24h) / TYDZIEŃ (7d)</p>
         
+        <!-- DAMAGE STATS -->
+        <div class="res-section-title">OBRAŻENIA (DMG)</div>
         <div class="res-grid">
-            <div class="res-card"><small>Avg DMG/Hit</small><span class="highlight" id="resAvgDmg">0</span></div>
-            <div class="res-card"><small>Hits / 24h</small><span class="highlight" id="resHits">0</span></div>
-            <div class="res-card"><small>Total DMG</small><span class="highlight" id="resTotalDmg">0</span></div>
-            <div class="res-card"><small>Cases</small><span id="resCases">0</span></div>
-            <div class="res-card"><small>HP Cost/Hit</small><span id="resHpCost">0</span></div>
-            <div class="res-card"><small>HP Regen</small><span id="resHpRegen">0</span></div>
+            <div class="res-card"><small>Total DMG</small><span class="dual-val" id="resTotalDmg">0</span></div>
+            <div class="res-card"><small>Avg Hit</small><span class="highlight" id="resAvgDmg">0</span></div>
+            <div class="res-card"><small>Min / Max Hit</small><span class="dual-val" id="resMinMax">0 / 0</span></div>
         </div>
 
-        <h4 style="color:#00ccff; border-bottom:1px solid #334;">PRODUKCJA (PP)</h4>
+        <!-- HITS BREAKDOWN -->
+        <div class="res-section-title">AKTYWNOŚĆ (HITY)</div>
         <div class="res-grid">
-            <div class="res-card"><small>Self Work</small><span id="resSelfPP">0</span></div>
-            <div class="res-card"><small>Ext. Work</small><span id="resExtPP">0</span></div>
-            <div class="res-card"><small>Automated</small><span id="resAutoPP">0</span></div>
-            <div class="res-card"><small>TOTAL PP</small><span class="highlight" id="resTotalPP">0</span></div>
+            <div class="res-card"><small>Total Hits</small><span class="dual-val" id="resHits">0</span></div>
+            <div class="res-card"><small>Hits (Pill Active)</small><span class="highlight" id="resHitsPill">0</span></div>
+            <div class="res-card"><small>Hits (No Pill)</small><span style="color:#aaa;" id="resHitsNoPill">0</span></div>
+        </div>
+
+        <!-- RESOURCES -->
+        <div class="res-section-title">ZASOBY I SPRZĘT</div>
+        <div class="res-grid">
+            <div class="res-card"><small>Cases (Loot)</small><span class="dual-val" id="resCases">0</span></div>
+            <div class="res-card"><small>HP Cost/Hit</small><span class="highlight" id="resHpCost">0</span></div>
+            <div class="res-card"><small>Zużyty Sprzęt (szt)</small><span class="dual-val" id="resEquipUsed">0</span></div>
+        </div>
+
+        <!-- PRODUCTION -->
+        <div class="res-section-title">EKONOMIA (PP)</div>
+        <div class="res-grid">
+            <div class="res-card"><small>Self Work</small><span class="dual-val" id="resSelfPP">0</span></div>
+            <div class="res-card"><small>Automated</small><span class="dual-val" id="resAutoPP">0</span></div>
+            <div class="res-card"><small>TOTAL PP</small><span class="dual-val" id="resTotalPP">0</span></div>
         </div>
 
         <div style="margin-top:20px;">
-            <button onclick="copyJSON()" style="margin:0; padding:10px; font-size:1rem; background:#334; color:#fff;">Kopiuj JSON do Schowka</button>
+            <button onclick="copyJSON()" style="margin:0; padding:10px; font-size:0.9rem; background:#332222; color:#fff; border:1px solid #553333;">Kopiuj JSON do Schowka</button>
             <textarea id="jsonOutput" style="height:0; opacity:0;"></textarea>
         </div>
     </div>
 
-    <div style="text-align:center; margin-top:40px; color:#666; font-size:0.8rem;">
-        War Era Simulator v3.1 Fix
+    <div style="text-align:center; margin-top:40px; color:#444; font-size:0.8rem;">
+        War Era Sim v4.0 • Red Theme
     </div>
 </div>
 
