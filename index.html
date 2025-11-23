@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>War Era Simulator (Red)</title>
+    <title>War Era Sim (Pro)</title>
     <style>
         * {box-sizing: border-box; -webkit-tap-highlight-color: transparent;}
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #05050a; /* Bardzo ciemne tło */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #05050a;
             color: #ddd;
             margin: 0;
-            padding: 10px;
+            padding: 10px 10px 80px 10px;
             line-height: 1.5;
         }
         .container {
@@ -20,212 +20,111 @@
             background: #11111f;
             padding: 15px;
             border-radius: 16px;
-            border: 1px solid #ff3333; /* Czerwona ramka */
+            border: 1px solid #ff3333;
             box-shadow: 0 0 25px rgba(255, 51, 51, 0.15);
         }
         
-        /* --- TYPOGRAPHY (RED THEME) --- */
-        h1 {
-            text-align: center;
-            color: #ff3333;
-            font-size: 1.8rem;
-            margin: 10px 0 5px 0;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(255, 51, 51, 0.6);
+        h1 { text-align: center; color: #ff3333; margin: 10px 0 5px 0; text-transform: uppercase; letter-spacing: 2px; }
+        h1 + p { text-align: center; color: #ffaa00; font-size: 0.85rem; margin-bottom: 20px; }
+        h2 { color: #ff3333; border-bottom: 1px solid #442222; padding-bottom: 5px; margin: 25px 0 15px 0; font-size: 1.2rem; text-transform: uppercase; display:flex; justify-content:space-between; align-items:center; }
+        
+        input, select {
+            font-size: 16px; padding: 10px; border-radius: 8px; border: 1px solid #442222; background: #1a0f0f; color: #fff; width: 100%; transition: 0.2s;
         }
-        h1 + p {
-            text-align: center;
-            color: #ffaa00; /* Pomarańczowy akcent */
-            font-size: 0.9rem;
+        input:focus, select:focus { border-color: #ff3333; outline: none; background: #251515; }
+
+        .tracker-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
             margin-bottom: 20px;
         }
-        h2 {
-            color: #ff3333;
-            border-bottom: 1px solid #442222;
-            padding-bottom: 5px;
-            margin: 25px 0 15px 0;
-            font-size: 1.2rem;
-            text-transform: uppercase;
-        }
-        
-        /* --- INPUTS --- */
-        input, select {
-            font-size: 16px; 
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #442222;
+        .tracker-box {
             background: #1a0f0f;
-            color: #fff;
-            width: 100%;
+            padding: 10px;
+            border-radius: 12px;
+            border: 2px solid #ff3333;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.8);
         }
-        input:focus, select:focus {
-            border-color: #ff3333;
-            outline: none;
-            background: #251515;
-        }
+        .tracker-label { display: block; font-size: 0.7rem; color: #888; text-transform: uppercase; margin-bottom: 5px; }
+        .tracker-val { font-size: 1.4rem; font-weight: bold; color: #fff; }
+        .tracker-val input { width: 60px; text-align: center; border: none; border-bottom: 1px solid #ff3333; background: transparent; font-size: 1.4rem; padding: 0; color: #ff3333; }
 
-        /* --- SKILL GRID --- */
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-        }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
         @media (min-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); } }
         @media (min-width: 900px) { .grid { grid-template-columns: repeat(3, 1fr); } }
 
         .skill-item {
-            background: #1a1a25;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #332222;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            background: #1a1a25; padding: 12px; border-radius: 10px; border: 1px solid #332222;
+            display: flex; flex-direction: column; gap: 8px;
         }
-        .skill-header {
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            color: #ffcccc;
-        }
-        .skill-val-display {
-            color: #ff3333;
-            font-weight: bold;
-        }
-        
-        /* SLIDERS */
-        input[type="range"] {
-            accent-color: #ff3333;
-            height: 20px;
-        }
+        .skill-header { display: flex; justify-content: space-between; font-weight: bold; color: #ffcccc; }
+        .skill-val-display { color: #ff3333; font-weight: bold; }
         .skill-controls { display: flex; gap: 10px; align-items: center; }
+        input[type="range"] { accent-color: #ff3333; height: 20px; flex: 1; }
         .skill-controls input[type="number"] { width: 50px; text-align: center; }
 
-        /* --- POINTS TRACKER --- */
-        .points-tracker {
-            background: #1a0f0f;
-            padding: 15px;
-            border-radius: 12px;
-            border: 2px solid #ff3333;
-            text-align: center;
-            position: sticky;
-            top: 10px;
-            z-index: 100;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.7);
-            margin-bottom: 20px;
-        }
-        .points-display {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #ff3333;
-        }
-        .points-display input { border-bottom: 1px solid #ff3333; }
-
-        /* --- FIELDSETS --- */
-        fieldset {
-            border: 1px solid #442222;
-            background: #161111;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
-        }
-        legend { color: #ffaa00; font-weight: bold; padding: 0 5px; }
-        .form-row {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 12px;
-        }
+        fieldset { border: 1px solid #442222; background: #161111; border-radius: 10px; padding: 15px; margin: 15px 0; }
+        .form-row { display: flex; flex-direction: column; margin-bottom: 12px; }
         @media (min-width: 600px) {
             .form-row { flex-direction: row; align-items: center; justify-content: space-between; }
             .form-row label { margin-bottom: 0; margin-right: 10px; }
             .form-row input, .form-row select { width: 150px; }
         }
 
-        /* --- ACTION BUTTON --- */
-        #simulateBtn {
-            width: 100%;
-            background: linear-gradient(135deg, #ff3333, #cc0000);
-            color: #fff;
-            font-weight: 800;
-            font-size: 1.2rem;
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            margin: 20px 0;
-            box-shadow: 0 5px 15px rgba(255, 51, 51, 0.3);
-            cursor: pointer;
-            text-transform: uppercase;
+        .btn-reset {
+            background: #331111; color: #ff5555; border: 1px solid #552222; padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; cursor: pointer;
         }
-        #simulateBtn:active { transform: scale(0.98); }
-
-        /* --- RESULTS --- */
-        .results {
-            display: none;
-            background: #1a1a25;
-            padding: 15px;
-            border-radius: 12px;
-            border: 2px solid #ff3333;
+        
+        .floating-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: #110000; border-top: 2px solid #ff3333; padding: 10px 15px;
+            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.9); z-index: 999;
         }
-        .res-section-title {
-            text-align: center;
-            color: #ff3333;
-            margin: 20px 0 10px 0;
-            font-size: 1.1rem;
-            border-bottom: 1px solid #333;
-            padding-bottom: 5px;
-        }
-        .res-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 10px;
-        }
+        .fb-stat { text-align: center; }
+        .fb-label { font-size: 0.7rem; color: #888; display: block; }
+        .fb-val { font-size: 1.1rem; color: #ff3333; font-weight: bold; }
+        
+        .results { background: #1a1a25; padding: 15px; border-radius: 12px; border: 2px solid #ff3333; margin-top: 20px; }
+        .res-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
         @media (min-width: 600px) { .res-grid { grid-template-columns: repeat(3, 1fr); } }
-        
-        .res-card {
-            background: #222233;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid #333;
-        }
-        .res-card small { display: block; color: #888; font-size: 0.75rem; margin-bottom: 3px; text-transform: uppercase;}
-        .res-card span { display: block; color: #fff; font-weight: bold; font-size: 1.1rem; }
-        .res-card span.highlight { color: #ff3333; font-size: 1.2rem; }
-        
-        /* Dual value display (24h / 7d) */
+        .res-card { background: #222233; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #333; }
+        .res-card small { display: block; color: #888; font-size: 0.7rem; margin-bottom: 4px; text-transform: uppercase;}
         .dual-val { font-size: 0.9rem !important; color: #fff !important; }
-        .dual-val b { color: #ff3333; font-size: 1.1rem; } /* Dzień */
-        .dual-val i { color: #ffaa00; font-style: normal; } /* Tydzień */
-
+        .dual-val b { color: #ff3333; font-size: 1.1rem; } 
+        .dual-val i { color: #ffaa00; font-style: normal; }
+        
         textarea {
-            background: #000;
-            color: #ff3333;
-            font-family: monospace;
-            font-size: 12px;
-            border: 1px solid #442222;
-            width: 100%;
-            height: 60px;
+            background: #000; color: #ff3333; font-family: monospace; font-size: 11px; border: 1px solid #442222; width: 100%; height: 80px; padding: 5px; margin-top: 10px;
         }
+        .io-buttons { display: flex; gap: 10px; margin-top: 5px; }
+        .io-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-copy { background: #332222; color: #fff; border: 1px solid #553333; }
+        .btn-import { background: #004466; color: #fff; border: 1px solid #0088cc; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>War Era Sim</h1>
-    <p>Battle Simulator v4.0 (Red Edition)</p>
+    <h1>Warera skill simulator</h1>
+    <p>by Rzezimioszek & Gemini 3 & Cloude Sonnet 4.5</p>
 
-    <!-- STICKY TRACKER -->
-    <div class="points-tracker">
-        <small style="color:#888;">PUNKTY (WYDANE / LIMIT)</small>
-        <div class="points-display">
-            <span id="usedPoints">0</span> / <input type="number" id="totalPoints" value="96" style="width:60px; font-size:1.5rem; padding:5px; text-align:center; border:none; border-bottom:1px solid #ff3333; background:transparent; color:#fff;">
+    <div class="tracker-container">
+        <div class="tracker-box">
+            <span class="tracker-label">LEVEL</span>
+            <div class="tracker-val">LVL <input type="number" id="playerLevel" value="24" min="1" max="100"></div>
         </div>
-        <div id="pointsWarning" style="color:#ff5555; display:none; font-weight:bold; font-size:0.9rem; margin-top:5px;">⚠️ BRAK PUNKTÓW!</div>
+        <div class="tracker-box">
+            <span class="tracker-label">PUNKTY</span>
+            <div class="tracker-val"><span id="usedPoints">0</span> / <input type="number" id="totalPoints" value="96"></div>
+            <small id="pointsWarning" style="color:#ff5555; display:none; font-size:0.7rem;">PRZEKROCZONO!</small>
+        </div>
     </div>
 
-    <h2>🎯 UMIEJĘTNOŚCI</h2>
+    <h2>🎯 UMIEJĘTNOŚCI <button class="btn-reset" id="resetSkillsBtn">↺ RESET</button></h2>
     <div class="grid" id="skillsGrid"></div>
 
     <h2>🛡️ EKWIPUNEK</h2>
@@ -260,7 +159,7 @@
         </div>
         <div class="form-row" style="justify-content:flex-start; gap:10px;">
             <input type="checkbox" id="usePill" checked style="width:20px;">
-            <label for="usePill" style="color:#fff;">Używam Pill (8h buff / 16h debuff)</label>
+            <label for="usePill" style="color:#fff;">Używam Pill (Start Full + 8h)</label>
         </div>
     </fieldset>
 
@@ -272,54 +171,40 @@
         <div class="form-row"><label>Work u innych:</label><input type="number" id="worksPerDay" value="0"></div>
     </fieldset>
 
-    <button id="simulateBtn">OBLICZ WYNIKI</button>
-
-    <!-- RESULTS SECTION -->
     <div id="results" class="results">
         <h3 style="text-align:center; color:#ff3333; margin:0;">RAPORT BOJOWY</h3>
         <p style="text-align:center; color:#888; font-size:0.8rem; margin-top:0;">DZIEŃ (24h) / TYDZIEŃ (7d)</p>
         
-        <!-- DAMAGE STATS -->
-        <div class="res-section-title">OBRAŻENIA (DMG)</div>
         <div class="res-grid">
             <div class="res-card"><small>Total DMG</small><span class="dual-val" id="resTotalDmg">0</span></div>
-            <div class="res-card"><small>Avg Hit</small><span class="highlight" id="resAvgDmg">0</span></div>
-            <div class="res-card"><small>Min / Max Hit</small><span class="dual-val" id="resMinMax">0 / 0</span></div>
-        </div>
-
-        <!-- HITS BREAKDOWN -->
-        <div class="res-section-title">AKTYWNOŚĆ (HITY)</div>
-        <div class="res-grid">
+            <div class="res-card"><small>Avg Hit (Mix)</small><span class="highlight" id="resAvgDmg">0</span></div>
             <div class="res-card"><small>Total Hits</small><span class="dual-val" id="resHits">0</span></div>
-            <div class="res-card"><small>Hits (Pill Active)</small><span class="highlight" id="resHitsPill">0</span></div>
-            <div class="res-card"><small>Hits (No Pill)</small><span style="color:#aaa;" id="resHitsNoPill">0</span></div>
-        </div>
-
-        <!-- RESOURCES -->
-        <div class="res-section-title">ZASOBY I SPRZĘT</div>
-        <div class="res-grid">
-            <div class="res-card"><small>Cases (Loot)</small><span class="dual-val" id="resCases">0</span></div>
+            
+            <!-- Nowe pola Pill Min/Max -->
+            <div class="res-card" id="cardMinMaxBuff"><small>Min-Max (BUFF 1.8x)</small><span class="dual-val" id="resMinMaxBuff">-</span></div>
+            <div class="res-card" id="cardMinMaxDebuff"><small>Min-Max (DEBUFF 0.2x)</small><span style="color:#aaa; font-size:0.9rem;" id="resMinMaxDebuff">-</span></div>
+            
+            <div class="res-card"><small>Cases</small><span class="dual-val" id="resCases">0</span></div>
             <div class="res-card"><small>HP Cost/Hit</small><span class="highlight" id="resHpCost">0</span></div>
-            <div class="res-card"><small>Zużyty Sprzęt (szt)</small><span class="dual-val" id="resEquipUsed">0</span></div>
+            <div class="res-card"><small>Zużyty Sprzęt</small><span class="dual-val" id="resEquipUsed">0</span></div>
+            <div class="res-card"><small>Total PP</small><span class="dual-val" id="resTotalPP">0</span></div>
         </div>
-
-        <!-- PRODUCTION -->
-        <div class="res-section-title">EKONOMIA (PP)</div>
-        <div class="res-grid">
-            <div class="res-card"><small>Self Work</small><span class="dual-val" id="resSelfPP">0</span></div>
-            <div class="res-card"><small>Automated</small><span class="dual-val" id="resAutoPP">0</span></div>
-            <div class="res-card"><small>TOTAL PP</small><span class="dual-val" id="resTotalPP">0</span></div>
-        </div>
-
+        
         <div style="margin-top:20px;">
-            <button onclick="copyJSON()" style="margin:0; padding:10px; font-size:0.9rem; background:#332222; color:#fff; border:1px solid #553333;">Kopiuj JSON do Schowka</button>
-            <textarea id="jsonOutput" style="height:0; opacity:0;"></textarea>
+            <small style="color:#888; display:block; margin-bottom:5px;">IMPORT / EXPORT JSON</small>
+            <textarea id="jsonOutput" placeholder="Tutaj pojawi się kod builda lub wklej go tutaj..."></textarea>
+            <div class="io-buttons">
+                <button onclick="copyJSON()" class="io-btn btn-copy">Kopiuj</button>
+                <button onclick="importJSON()" class="io-btn btn-import">Wczytaj</button>
+            </div>
         </div>
     </div>
+</div>
 
-    <div style="text-align:center; margin-top:40px; color:#444; font-size:0.8rem;">
-        War Era Sim v4.0 • Red Theme
-    </div>
+<div class="floating-bar">
+    <div class="fb-stat"><span class="fb-label">DMG (24h)</span><span class="fb-val" id="fbTotalDmg">0</span></div>
+    <div class="fb-stat"><span class="fb-label">HITS</span><span class="fb-val" id="fbTotalHits">0</span></div>
+    <div class="fb-stat"><span class="fb-label">AVG HIT</span><span class="fb-val" id="fbAvgHit">0</span></div>
 </div>
 
 <script src="simulator.js"></script>

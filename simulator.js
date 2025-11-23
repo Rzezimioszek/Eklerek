@@ -1,14 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
     const SKILL_COSTS = [1,2,3,4,5,6,7,8,9,10];
-    
+    const POINTS_PER_LEVEL = 4;
+
     const SKILLS = {
         attack:          { name: 'Attack', icon: '⚔️', values: [100,120,140,160,180,200,220,240,260,280,300] },
         precision:       { name: 'Precision', icon: '🎯', values: [50,55,60,65,70,75,80,85,90,95,100] },
         critChance:      { name: 'Crit Chance', icon: '💥', values: [10,15,20,25,30,35,40,45,50,55,60] },
-        critDamage:      { name: 'Crit Damage', icon: '🔥', values: [50,60,70,80,90,100,110,120,130,140,150] },
+        critDamage:      { name: 'Crit Damage', icon: '🔥', values: [100,120,140,160,180,200,220,240,260, 280,300] },
         armor:           { name: 'Armor', icon: '🛡️', values: [0,4,8,12,16,20,24,28,32,36,40] },
         dodge:           { name: 'Dodge', icon: '💨', values: [0,4,8,12,16,20,24,28,32,36,40] },
-        lootChance:      { name: 'Loot Chance', icon: '📦', values: [5,10,15,20,25,30,35,40,45,50,55] },
+        // POPRAWKA: Loot Chance 5% -> 15%
+        lootChance:      { name: 'Loot Chance', icon: '📦', values: [5,6,7,8,9,10,11,12,13,14,15] },
         health:          { name: 'Health', icon: '❤️', values: [50,60,70,80,90,100,110,120,130,140,150] },
         hunger:          { name: 'Hunger', icon: '🍖', values: [4,5,6,7,8,9,10,11,12,13,14] },
         energy:          { name: 'Energy', icon: '⚡', values: [30,40,50,60,70,80,90,100,110,120,130] },
@@ -23,18 +25,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function initApp() {
         renderSkills();
-        updateTracker();
         
-        document.getElementById('totalPoints').addEventListener('input', updateTracker);
-        document.getElementById('simulateBtn').addEventListener('click', simulate);
+        // Listeners
+        document.getElementById('playerLevel').addEventListener('input', handleLevelChange);
+        document.getElementById('totalPoints').addEventListener('input', () => { updateTracker(); saveAll(); });
+        document.getElementById('resetSkillsBtn').addEventListener('click', resetSkills);
+        
+        const allInputs = document.querySelectorAll('input, select');
+        allInputs.forEach(el => {
+            if(el.id === 'playerLevel' || el.id === 'totalPoints') return;
+            el.addEventListener('input', () => { simulate(); saveAll(); });
+        });
+
+        loadFromStorage();
+    }
+
+    function handleLevelChange(e) {
+        const lvl = parseInt(e.target.value) || 1;
+        const points = lvl * POINTS_PER_LEVEL;
+        document.getElementById('totalPoints').value = points;
+        updateTracker();
+        saveAll();
+        simulate();
+    }
+
+    function resetSkills() {
+        if(confirm('Zresetować build?')) {
+            Object.keys(SKILLS).forEach(key => {
+                currentBuild[key] = 0;
+                document.getElementById(`slider_${key}`).value = 0;
+                document.getElementById(`input_${key}`).value = 0;
+                updateSkillDisplay(key, 0);
+            });
+            updateTracker();
+            saveAll();
+            simulate();
+        }
     }
 
     function renderSkills() {
         const grid = document.getElementById('skillsGrid');
+        grid.innerHTML = ''; // Clear on re-render if needed
         Object.keys(SKILLS).forEach(key => {
             currentBuild[key] = 0;
             const skill = SKILLS[key];
-            
             const el = document.createElement('div');
             el.className = 'skill-item';
             el.innerHTML = `
@@ -48,23 +82,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             grid.appendChild(el);
-
+            
             const slider = document.getElementById(`slider_${key}`);
             const input = document.getElementById(`input_${key}`);
-            const display = document.getElementById(`val_${key}`);
 
             const update = (val) => {
                 val = Math.max(0, Math.min(10, parseInt(val)||0));
                 slider.value = val;
                 input.value = val;
                 currentBuild[key] = val;
-                display.textContent = skill.values[val] + getSuffix(key);
+                updateSkillDisplay(key, val);
                 updateTracker();
+                saveAll();
+                simulate();
             };
 
             slider.addEventListener('input', e => update(e.target.value));
             input.addEventListener('input', e => update(e.target.value));
         });
+    }
+
+    function updateSkillDisplay(key, val) {
+        document.getElementById(`val_${key}`).textContent = SKILLS[key].values[val] + getSuffix(key);
     }
 
     function getSuffix(key) {
@@ -77,24 +116,21 @@ document.addEventListener('DOMContentLoaded', () => {
         Object.values(currentBuild).forEach(lvl => {
             if(lvl > 0) spent += SKILL_COSTS.slice(0, lvl).reduce((a,b)=>a+b, 0);
         });
-
-        const usedEl = document.getElementById('usedPoints');
-        usedEl.textContent = spent;
-        
+        document.getElementById('usedPoints').textContent = spent;
         const warn = document.getElementById('pointsWarning');
         if(spent > total) {
-            usedEl.style.color = '#ff5555';
+            document.getElementById('usedPoints').style.color = '#ff5555';
             warn.style.display = 'block';
         } else {
-            usedEl.style.color = '#ff3333';
+            document.getElementById('usedPoints').style.color = '#ff3333';
             warn.style.display = 'none';
         }
     }
 
+    // --- SIMULATION ---
     function simulate() {
         const eq = getInputs();
         
-        // 1. STATYSTKI
         const stats = {
             attack: (SKILLS.attack.values[currentBuild.attack] + eq.weaponAttack) * (1 + eq.ammoBonus/100),
             precision: Math.min(100, SKILLS.precision.values[currentBuild.precision] + eq.glovesPrec),
@@ -110,84 +146,217 @@ document.addEventListener('DOMContentLoaded', () => {
             production: SKILLS.production.values[currentBuild.production]
         };
 
-        // 2. COMBAT
+        // Base Combat
         const normalDmg = stats.attack;
         const critDmg = stats.attack * (1 + stats.critDamage/100);
         const missDmg = stats.attack * 0.5;
 
-        // Min/Max DMG logic:
-        // Min = Miss damage (always lowest possible output per hit attempt)
-        // Max = Crit damage (highest possible output)
-        const minDmg = missDmg;
-        const maxDmg = critDmg;
+        // Min (Miss) / Max (Crit) Base
+        const baseMin = missDmg;
+        const baseMax = critDmg;
 
-        // Avg Hit
         const damageWhenHit = normalDmg * (1 - stats.critChance/100) + critDmg * (stats.critChance/100);
-        const avgDmgPerHit = damageWhenHit * (stats.precision/100) + missDmg * (1 - stats.precision/100);
+        const avgDmgBase = damageWhenHit * (stats.precision/100) + missDmg * (1 - stats.precision/100);
 
-        // Hits Count
         const hpCostPerHit = 10 * (1 - stats.armor/100) * (1 - stats.dodge/100);
-        const naturalRegen = stats.maxHealth * 0.1 * 24;
-        const foodRegen = stats.maxHunger * 0.1 * 24 * eq.foodHP;
-        const totalHits24h = hpCostPerHit > 0 ? (naturalRegen + foodRegen) / hpCostPerHit : 0;
+        const totalRegenPerH = (stats.maxHealth * 0.1) + ((stats.maxHunger * 0.1) * eq.foodHP);
 
-        // Pill Breakdown (zakładamy rozkład hitów równomierny w czasie)
-        // Pill trwa 8h (1/3 doby), reszta 16h (2/3 doby).
-        let hitsOnPill = 0;
-        let hitsOffPill = 0;
-        let totalDmg24h = 0;
+        let hitsBuff = 0;
+        let hitsDebuff = 0;
 
         if (eq.usePill) {
-            hitsOnPill = totalHits24h / 3;
-            hitsOffPill = (totalHits24h / 3) * 2;
-            // Dmg: Pill=180%, Off=20%
-            totalDmg24h = (hitsOnPill * avgDmgPerHit * 1.8) + (hitsOffPill * avgDmgPerHit * 0.2);
+            const startPool = stats.maxHealth + (stats.maxHunger * eq.foodHP);
+            const buffPool = startPool + (totalRegenPerH * 8);
+            const debuffPool = totalRegenPerH * 16;
+            
+            if (hpCostPerHit > 0) {
+                hitsBuff = buffPool / hpCostPerHit;
+                hitsDebuff = debuffPool / hpCostPerHit;
+            }
         } else {
-            hitsOnPill = 0;
-            hitsOffPill = totalHits24h;
-            totalDmg24h = totalHits24h * avgDmgPerHit;
+            const startPool = stats.maxHealth + (stats.maxHunger * eq.foodHP);
+            const dailyRegen = totalRegenPerH * 24;
+            if (hpCostPerHit > 0) {
+                hitsDebuff = (startPool + dailyRegen) / hpCostPerHit;
+            }
         }
 
-        // Equipment Usage (100 hits durability)
+        const totalHits24h = hitsBuff + hitsDebuff;
+        let totalDmg24h = 0;
+        let avgHitWeighted = 0;
+
+        // === MIN / MAX LOGIC WITH PILL ===
+        let pillMin = 0, pillMax = 0;
+        let noPillMin = 0, noPillMax = 0;
+        let labelBuff = "Min-Max";
+        let labelDebuff = "Min-Max";
+
+        if (eq.usePill) {
+            // Buff Phase (1.8x)
+            pillMin = baseMin * 1.8;
+            pillMax = baseMax * 1.8;
+            
+            // Debuff Phase (0.2x)
+            noPillMin = baseMin * 0.2;
+            noPillMax = baseMax * 0.2;
+
+            totalDmg24h = (hitsBuff * avgDmgBase * 1.8) + (hitsDebuff * avgDmgBase * 0.2);
+            avgHitWeighted = totalHits24h > 0 ? totalDmg24h / totalHits24h : 0;
+            
+            labelBuff = "Min-Max (BUFF 1.8x)";
+            labelDebuff = "Min-Max (DEBUFF 0.2x)";
+        } else {
+            // No Pill (1.0x)
+            pillMin = baseMin; // Treat as standard
+            pillMax = baseMax;
+            
+            noPillMin = baseMin;
+            noPillMax = baseMax;
+
+            totalDmg24h = totalHits24h * avgDmgBase;
+            avgHitWeighted = avgDmgBase;
+            
+            labelBuff = "Min-Max (Normal)";
+            labelDebuff = "Min-Max (Normal)";
+        }
+
         const equipUsed24h = totalHits24h / 100;
 
-        // 3. PRODUCTION
-        const sessionsSelf = (stats.entrepreneurship * 0.1 * 24) / 10;
-        const selfPP = sessionsSelf * stats.production * (1 + eq.prodBonus/100);
+        // Production
+        const selfPP = ((stats.entrepreneurship * 0.1 * 24)/10) * stats.production * (1 + eq.prodBonus/100);
         const extPP = eq.worksPerDay * stats.production * (1 + eq.prodBonus/100);
         const autoPP = eq.engineLvl * 24 * eq.numCompanies * (1 + eq.prodBonus/100);
         const totalPP24h = selfPP + extPP + autoPP;
 
-        // 4. DISPLAY (Dual Values: 24h / 7d)
+        // DISPLAY
         const fmt = (val) => `<b>${formatK(val)}</b> <i>${formatK(val*7)}</i>`;
+        const fmtRange = (min, max) => `<b>${Math.round(min)}</b> - <b>${Math.round(max)}</b>`;
 
         document.getElementById('resTotalDmg').innerHTML = fmt(totalDmg24h);
-        document.getElementById('resAvgDmg').textContent = Math.round(avgDmgPerHit);
-        document.getElementById('resMinMax').innerHTML = `<b>${Math.round(minDmg)}</b> / <b>${Math.round(maxDmg)}</b>`;
-        
+        document.getElementById('resAvgDmg').textContent = Math.round(avgHitWeighted);
         document.getElementById('resHits').innerHTML = fmt(totalHits24h);
-        document.getElementById('resHitsPill').textContent = Math.round(hitsOnPill);
-        document.getElementById('resHitsNoPill').textContent = Math.round(hitsOffPill);
+        
+        // Update Labels and Values for Min/Max
+        document.querySelector('#cardMinMaxBuff small').textContent = labelBuff;
+        document.getElementById('resMinMaxBuff').innerHTML = fmtRange(pillMin, pillMax);
+
+        document.querySelector('#cardMinMaxDebuff small').textContent = labelDebuff;
+        document.getElementById('resMinMaxDebuff').innerHTML = fmtRange(noPillMin, noPillMax);
+        
+        if(!eq.usePill) {
+             document.getElementById('cardMinMaxDebuff').style.display = 'none'; // Hide duplicate info if no pill
+        } else {
+             document.getElementById('cardMinMaxDebuff').style.display = 'block';
+        }
 
         document.getElementById('resCases').innerHTML = fmt(totalHits24h * stats.lootChance / 100);
         document.getElementById('resHpCost').textContent = hpCostPerHit.toFixed(2);
         document.getElementById('resEquipUsed').innerHTML = fmt(equipUsed24h);
-
-        document.getElementById('resSelfPP').innerHTML = fmt(selfPP);
-        document.getElementById('resAutoPP').innerHTML = fmt(autoPP);
         document.getElementById('resTotalPP').innerHTML = fmt(totalPP24h);
 
-        document.getElementById('results').style.display = 'block';
-        document.getElementById('results').scrollIntoView({behavior:'smooth'});
+        document.getElementById('fbTotalDmg').textContent = formatK(totalDmg24h);
+        document.getElementById('fbTotalHits').textContent = formatK(totalHits24h);
+        document.getElementById('fbAvgHit').textContent = Math.round(avgHitWeighted);
 
-        // JSON Export
+        // JSON prep
         const json = {
+            version: "7.0",
+            level: document.getElementById('playerLevel').value,
+            totalPoints: document.getElementById('totalPoints').value,
             build: currentBuild,
-            inputs: eq,
-            daily: { hits: totalHits24h, dmg: totalDmg24h, pp: totalPP24h },
-            pill: { hitsOn: hitsOnPill, hitsOff: hitsOffPill }
+            inputs: eq
         };
-        document.getElementById('jsonOutput').value = JSON.stringify(json, null, 2);
+        document.getElementById('jsonOutput').value = JSON.stringify(json);
+    }
+
+    // --- STORAGE & IMPORT ---
+    function saveAll() {
+        const jsonStr = document.getElementById('jsonOutput').value;
+        if(jsonStr) localStorage.setItem('warEraSave_v7', jsonStr);
+    }
+
+    function loadFromStorage() {
+        const saved = localStorage.getItem('warEraSave_v7');
+        if (saved) {
+            importDataLogic(saved);
+        } else {
+            simulate();
+        }
+    }
+
+    window.importJSON = function() {
+        const str = document.getElementById('jsonOutput').value;
+        if(!str) return alert("Wklej JSON do pola tekstowego!");
+        try {
+            importDataLogic(str);
+            alert("Wczytano pomyślnie!");
+        } catch(e) {
+            alert("Błąd importu: " + e.message);
+        }
+    };
+
+    function importDataLogic(jsonString) {
+        const data = JSON.parse(jsonString);
+        
+        if(data.level) document.getElementById('playerLevel').value = data.level;
+        if(data.totalPoints) document.getElementById('totalPoints').value = data.totalPoints;
+
+        if(data.inputs) {
+            const map = {
+                weaponAttack: data.inputs.weaponAttack,
+                weaponCrit: data.inputs.weaponCrit,
+                helmetCritDmg: data.inputs.helmetCritDmg,
+                chestArmor: data.inputs.chestArmor,
+                pantsArmor: data.inputs.pantsArmor,
+                bootsDodge: data.inputs.bootsDodge,
+                glovesPrec: data.inputs.glovesPrec,
+                foodType: data.inputs.foodHP,
+                ammoType: data.inputs.ammoBonus,
+                numCompanies: data.inputs.numCompanies,
+                automatedEngine: data.inputs.engineLvl,
+                productionBonus: data.inputs.prodBonus,
+                worksPerDay: data.inputs.worksPerDay
+            };
+            Object.keys(map).forEach(id => {
+                if(document.getElementById(id)) document.getElementById(id).value = map[id];
+            });
+            document.getElementById('usePill').checked = data.inputs.usePill;
+        }
+
+        if(data.build) {
+            Object.keys(data.build).forEach(key => {
+                const val = data.build[key];
+                if(document.getElementById(`slider_${key}`)) {
+                    document.getElementById(`slider_${key}`).value = val;
+                    document.getElementById(`input_${key}`).value = val;
+                    currentBuild[key] = val;
+                    updateSkillDisplay(key, val);
+                }
+            });
+        }
+        updateTracker();
+        simulate();
+    }
+
+    function updateSkillDisplay(key, val) {
+        document.getElementById(`val_${key}`).textContent = SKILLS[key].values[val] + getSuffix(key);
+    }
+
+    function updateTracker() {
+        const total = parseInt(document.getElementById('totalPoints').value) || 0;
+        let spent = 0;
+        Object.values(currentBuild).forEach(lvl => {
+            if(lvl > 0) spent += SKILL_COSTS.slice(0, lvl).reduce((a,b)=>a+b, 0);
+        });
+        document.getElementById('usedPoints').textContent = spent;
+        const warn = document.getElementById('pointsWarning');
+        if(spent > total) {
+            document.getElementById('usedPoints').style.color = '#ff5555';
+            warn.style.display = 'block';
+        } else {
+            document.getElementById('usedPoints').style.color = '#ff3333';
+            warn.style.display = 'none';
+        }
     }
 
     function formatK(num) {
@@ -220,5 +389,5 @@ function copyJSON() {
     const el = document.getElementById('jsonOutput');
     el.select();
     navigator.clipboard.writeText(el.value);
-    alert('JSON skopiowany!');
+    alert('Skopiowano!');
 }
